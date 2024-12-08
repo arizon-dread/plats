@@ -9,11 +9,7 @@ import (
 	yaml "sigs.k8s.io/yaml/goyaml.v3"
 )
 
-var (
-	c    Config
-	m    sync.Mutex
-	once sync.Once
-)
+var once sync.Once
 
 type Config struct {
 	Cache Cache
