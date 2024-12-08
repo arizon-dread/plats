@@ -10,12 +10,15 @@ type Location struct {
 }
 
 func (l *Location) Save(location Location) error {
-	db := database.Db{}
+	db := getImpl()
 	return db.Store(location.Zip, location.City)
 }
 
 func GetLocation(key string) Location {
-	db := database.Db{}
+	var db = getImpl()
 	val := db.Get(key)
 	return Location{Zip: key, City: *val}
+}
+func getImpl() database.Db {
+	return &database.Cache{}
 }
