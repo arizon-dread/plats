@@ -10,10 +10,11 @@ import (
 )
 
 var once sync.Once
+var Conf *Config
 
 type Config struct {
 	Cache Cache
-	Api   []Api
+	Apis  []ApiHost
 }
 
 type Cache struct {
@@ -23,13 +24,13 @@ type Cache struct {
 	Port  string `yaml:"port,omitempty"`
 	Proto string `yaml:"protocol,omitempty"`
 }
-type Api struct {
+type ApiHost struct {
 	Name string `yaml:"name"`
 	Url  string `yaml:"url"`
 	Path string `uaml:"path,omitempty"`
 }
 
-func (c *Config) Load() {
+func Load() *Config {
 	//check if config is loaded
 
 	once.Do(func() {
@@ -41,29 +42,26 @@ func (c *Config) Load() {
 		}
 		var path, env string
 		for k, v := range he {
-			if k == "Environment" {
+			if k == "environment" {
 				env = v
 			}
 			if k == "path" {
 				path = v
 			}
 		}
-		f, err := os.Open(fmt.Sprintf("%v/%v.yaml", path, env))
+		b, err := os.ReadFile(fmt.Sprintf("%v/%v.yaml", path, env))
 		if err != nil {
 			fmt.Printf("error reading config: %v", err)
 			return
 		}
-		var b []byte
-		_, err = f.Read(b)
-		if err != nil {
-			fmt.Printf("unable to read from file, %v", err)
-			return
-		}
+		var c = &Config{}
 		err = yaml.Unmarshal(b, &c)
 		if err != nil {
 			fmt.Printf("unable to unmarshal config: %v", err)
 			return
 		}
+		Conf = c
 
 	})
+	return Conf
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/arizon-dread/plats/api/handler"
@@ -8,8 +9,7 @@ import (
 )
 
 func main() {
-	config := config.Config{}
-	config.Load()
+	config := config.Load()
 	//fail on no config
 	if config.Cache.Url == "" {
 		panic("could not read config")
@@ -21,5 +21,5 @@ func main() {
 	mux.HandleFunc("GET /api/v1/zip/{zip}", handler.CityFromZip)
 
 	//start api server
-	http.ListenAndServe(":8080", mux)
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }
