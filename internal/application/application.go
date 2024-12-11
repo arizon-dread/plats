@@ -25,17 +25,28 @@ func GetCity(zip string) []byte {
 	//get all apiHosts
 	apis := conf.Apis
 	fallbacks := []config.ApiHost{}
+	//remove fallbacks from the simultaneous calls
 	apis = slices.DeleteFunc(apis, func(e config.ApiHost) bool {
 		if e.Fallback {
+			//add the fallbacks to their own slice
 			fallbacks = append(fallbacks, e)
 			return true
 		}
 		return false
 	})
 	city := getSimultaneously(zip, apis)
+	//call fallbacks if we didn't find anything in the primary list and if we actually have items in the fallback slice
 	if len(city) == 0 && len(fallbacks) > 0 {
 		city = getSimultaneously(zip, fallbacks)
 	}
+	if len(city) > 0 {
+		l.City = string(city)
+		err := l.Save()
+		if err != nil {
+			fmt.Printf("couldn't cache %v, because %v\n", l, err)
+		}
+	}
+	//return the city or an empty []byte{}
 	return city
 
 }
