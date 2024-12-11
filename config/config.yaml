@@ -2,6 +2,7 @@ cache:
   url: localhost
   #user:
   #pass:
+  proto: tcp
   port: 6379
 apis: 
 - name: "address-api"
