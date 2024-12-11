@@ -3,10 +3,11 @@ cache:
   #user:
   #pass:
   port: 6379
-api: 
+apis: 
 - name: "address-api"
   url: address-api:5000
   path: /api/postal/
+  fallback: true
 - name: "external-api"
   url: https://external-api.com
   path: /api/postal/

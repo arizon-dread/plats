@@ -10,7 +10,7 @@ import (
 )
 
 var once sync.Once
-var Conf *Config
+var conf *Config
 
 type Config struct {
 	Cache Cache
@@ -25,9 +25,10 @@ type Cache struct {
 	Proto string `yaml:"protocol,omitempty"`
 }
 type ApiHost struct {
-	Name string `yaml:"name"`
-	Url  string `yaml:"url"`
-	Path string `uaml:"path,omitempty"`
+	Name     string `yaml:"name"`
+	Url      string `yaml:"url"`
+	Path     string `yaml:"path,omitempty"`
+	Fallback bool   `yaml:"fallback,omitempty"`
 }
 
 func Load() *Config {
@@ -60,8 +61,8 @@ func Load() *Config {
 			fmt.Printf("unable to unmarshal config: %v", err)
 			return
 		}
-		Conf = c
+		conf = c
 
 	})
-	return Conf
+	return conf
 }
