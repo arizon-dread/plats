@@ -10,9 +10,9 @@ type Location struct {
 	City string `json:"city"`
 }
 
-func (l *Location) Save(location Location) error {
+func (l *Location) Save() error {
 	db := getImpl()
-	return db.Store(location.Zip, location.City)
+	return db.Store(l.Zip, l.City)
 }
 
 func GetLocation(key string) Location {
