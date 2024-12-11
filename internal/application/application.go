@@ -75,6 +75,7 @@ func getSimultaneously(zip string, apis []config.ApiHost) []byte {
 	select {
 	case <-c:
 		value = <-c
+		//only return and close c if we get an actual response. erroring in the goroutine will produce an empty string.
 		if len(*value) > 0 {
 			close(c)
 			return []byte(*value)
