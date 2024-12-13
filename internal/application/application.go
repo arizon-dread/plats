@@ -1,11 +1,15 @@
 package application
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/arizon-dread/plats/internal/config"
@@ -43,7 +47,7 @@ func GetCity(zip string) []byte {
 		l.City = string(city)
 		err := l.Save()
 		if err != nil {
-			fmt.Printf("couldn't cache %v, because %v\n", l, err)
+			log.Printf("couldn't cache %v, because %v\n", l, err)
 		}
 	}
 	//return the city or an empty []byte{}
@@ -52,68 +56,85 @@ func GetCity(zip string) []byte {
 }
 
 func getSimultaneously(zip string, apis []config.ApiHost) []byte {
-	c := make(chan *string)
-	timeout := make(chan bool)
-
+	result := make(chan *string)
+	ctx, cancel := context.WithCancel(context.Background())
+	wg := sync.WaitGroup{}
 	for _, api := range apis {
-		//create a timeout goroutine
-		go func() {
-			time.Sleep(10 * time.Second)
-			timeout <- true
-		}()
+		wg.Add(1)
 		//create a go routine for each api
 		go func() {
-			err := getAddrFromApi(zip, api, c)
+			err := getAddrFromApi(zip, api, ctx, result, &wg)
 			if err != nil {
-				fmt.Printf("Got error when calling api, %v\n", err)
+				log.Printf("Got error when calling api, %v\n", err)
+				return
 			}
 		}()
 	}
-	//Create a done var so we can count down until all api's have returned or timed out.
-	done := len(apis)
-	var value *string
+	//we can wait in a different routine for the fan-out to finish
+	go func() {
+		wg.Wait()
+		close(result)
+	}()
+	//read from the channel
 	select {
-	case <-c:
-		value = <-c
-		//only return and close c if we get an actual response. erroring in the goroutine will produce an empty string.
-		if len(*value) > 0 {
-			close(c)
-			return []byte(*value)
+	case res, ok := <-result:
+		cancel()
+		//if the channel produced a value, return it as a []byte
+		if ok && res != nil {
+			return []byte(*res)
 		}
-	case <-timeout:
-		done--
-		if done == 0 {
-			close(timeout)
-			close(c)
-		}
+		//if we have a closed channel and an empty result, return an empty []byte{} and produce a 404 in the api
+		return []byte{}
+	case <-ctx.Done():
+		//the context finished but there was no response
+		cancel()
+		return []byte{}
 	}
-	return []byte{}
 }
 
-func getAddrFromApi(zip string, api config.ApiHost, c chan<- *string) error {
+func getAddrFromApi(zip string, api config.ApiHost, ctx context.Context, c chan<- *string, wg *sync.WaitGroup) error {
+	defer wg.Done()
 	if zip == "71897" {
 		city := "Dyltabruk"
 		c <- &city
 		return nil
 	}
-	//Create an empty string that we send on the channel if an error occurs, so we can short-circuit the timeout.
-	mtStr := ""
-	resp, err := http.Get(fmt.Sprintf("%v%v", api.Url, api.Path))
+	reqCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	errs := errors.New("")
+	req, err := http.NewRequestWithContext(reqCtx, "GET", fmt.Sprintf("%v%v", api.Url, api.Path), nil)
 	if err != nil {
-		c <- &mtStr
-		return fmt.Errorf("error calling api url: %v, error was: %w", api.Url, err)
+		errs = errors.Join(errs, fmt.Errorf("got error when creating http request, %w", err))
 	}
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		c <- &mtStr
-		return fmt.Errorf("error reading response body, %w", err)
+	client := http.DefaultClient
+	resp, err := client.Do(req)
+	if err == nil {
+		b, err := io.ReadAll(resp.Body)
+		if err == nil {
+			city := model.City{}
+			err = json.Unmarshal(b, &city)
+			if err == nil {
+				// if the context is done, another routine has finished the call and this is trailing after, then we just return. otherwise, write to the channel
+				select {
+				case <-ctx.Done():
+					return nil
+				case <-time.After(5 * time.Second):
+					emptyStr := ""
+					if &city.City != &emptyStr {
+						c <- &city.City
+						ctx.Done()
+						return nil
+					}
+					return fmt.Errorf("timeout was reached")
+				}
+			} else {
+				errs = errors.Join(errs, fmt.Errorf("error unmarshalling response body into city struct, %w", err))
+			}
+		} else {
+			errs = errors.Join(errs, fmt.Errorf("error reading response body, %w", err))
+		}
+	} else {
+		errs = errors.Join(errs, fmt.Errorf("error calling api url: %v, error was: %w", api.Url, err))
 	}
-	city := model.City{}
-	err = json.Unmarshal(b, &city)
-	if err != nil {
-		c <- &mtStr
-		return fmt.Errorf("error unmarshalling response body into city struct, %w", err)
-	}
-	c <- &city.City
-	return nil
+	return errs
 }
