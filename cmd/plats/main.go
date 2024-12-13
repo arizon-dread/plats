@@ -19,6 +19,7 @@ func main() {
 
 	//api endpoints
 	mux.HandleFunc("GET /api/v1/zip/{zip}", handler.CityFromZip)
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200); w.Write([]byte("healthy")) })
 
 	//start api server
 	log.Fatal(http.ListenAndServe(":8080", mux))
