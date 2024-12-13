@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"sync"
@@ -52,13 +53,13 @@ func Load() *Config {
 		}
 		b, err := os.ReadFile(fmt.Sprintf("%v/%v.yaml", path, env))
 		if err != nil {
-			fmt.Printf("error reading config: %v", err)
+			log.Printf("error reading config: %v", err)
 			return
 		}
 		var c = &Config{}
 		err = yaml.Unmarshal(b, &c)
 		if err != nil {
-			fmt.Printf("unable to unmarshal config: %v", err)
+			log.Printf("unable to unmarshal config: %v", err)
 			return
 		}
 		conf = c
