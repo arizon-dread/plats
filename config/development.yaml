@@ -1,5 +1,5 @@
 cache:
-  url: localhost
+  url: valkey
   #user:
   #pass:
   protocol: tcp
