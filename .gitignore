@@ -1,1 +1,3 @@
-cmd/plats/__*
+# binaries
+cmd/plats/__
+*plats
