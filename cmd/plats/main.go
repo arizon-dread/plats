@@ -6,6 +6,7 @@ import (
 
 	"github.com/arizon-dread/plats/api/handler"
 	"github.com/arizon-dread/plats/internal/config"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -17,9 +18,13 @@ func main() {
 	//create stdlib http server
 	mux := http.NewServeMux()
 
-	//api endpoints
-	mux.HandleFunc("GET /api/v1/zip/{zip}", handler.CityFromZip)
+	//API ENDPOINTS
+
+	//Utilities
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200); w.Write([]byte("healthy")) })
+	mux.Handle("/metrics", promhttp.Handler())
+	//application endpoints
+	mux.HandleFunc("GET /api/v1/zip/{zip}", handler.CityFromZip)
 
 	//start api server
 	log.Fatal(http.ListenAndServe(":8080", mux))

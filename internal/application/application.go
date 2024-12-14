@@ -9,19 +9,23 @@ import (
 	"log"
 	"net/http"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/arizon-dread/plats/internal/config"
+	"github.com/arizon-dread/plats/internal/metrics"
 	"github.com/arizon-dread/plats/internal/model"
 )
 
 func GetCity(zip string) []byte {
+	mtx := metrics.GetMetrics()
 
 	//Creation of model checks the cache for a hit
 	l := model.GetLocation(zip)
 
 	if l.City != "" {
+		mtx.CacheHits.Inc()
 		return []byte(l.City)
 	}
 
@@ -122,6 +126,7 @@ func getAddrFromApi(zip string, api config.ApiHost, ctx context.Context, c chan<
 					emptyStr := ""
 					if &city.City != &emptyStr {
 						c <- &city.City
+						go addMetric(api)
 						ctx.Done()
 						return nil
 					}
@@ -137,4 +142,16 @@ func getAddrFromApi(zip string, api config.ApiHost, ctx context.Context, c chan<
 		errs = errors.Join(errs, fmt.Errorf("error calling api url: %v, error was: %w", api.Url, err))
 	}
 	return errs
+}
+
+func addMetric(api config.ApiHost) {
+
+	mtx := metrics.GetMetrics()
+	for _, apiHit := range mtx.ApiMetrix {
+
+		if strings.Contains(apiHit.Name, api.Name) {
+			//Increase metric for the api that got to serve the response.
+			apiHit.ApiHits.Inc()
+		}
+	}
 }
