@@ -56,13 +56,12 @@ func Load() *Config {
 			log.Printf("error reading config: %v", err)
 			return
 		}
-		var c = &Config{}
-		err = yaml.Unmarshal(b, &c)
+		conf = &Config{}
+		err = yaml.Unmarshal(b, &conf)
 		if err != nil {
 			log.Printf("unable to unmarshal config: %v", err)
 			return
 		}
-		conf = c
 
 	})
 	return conf

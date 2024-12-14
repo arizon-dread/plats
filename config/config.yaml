@@ -2,14 +2,14 @@ cache:
   url: localhost
   #user:
   #pass:
-  proto: tcp
+  protocol: tcp
   port: 6379
 apis: 
-- name: "address-api"
+- name: "address_api"
   url: address-api:5000
   path: /api/postal/
   fallback: true
-- name: "external-api"
+- name: "external_api"
   url: https://external-api.com
   path: /api/postal/
  
