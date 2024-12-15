@@ -15,7 +15,6 @@ func CityFromZip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeNotFound(w)
-	//Call address-api first, fmt.Sprintf(/api/v1/%v, r.PathValue("zip"))
 
 }
 
