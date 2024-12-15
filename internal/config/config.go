@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"strings"
 	"sync"
@@ -26,10 +27,12 @@ type Cache struct {
 	Proto string `yaml:"protocol,omitempty"`
 }
 type ApiHost struct {
-	Name     string `yaml:"name"`
-	Url      string `yaml:"url"`
-	Path     string `yaml:"path,omitempty"`
-	Fallback bool   `yaml:"fallback,omitempty"`
+	Name            string `yaml:"name"`
+	Url             string `yaml:"url"`
+	Path            string `yaml:"path,omitempty"`
+	ApiKey          string `yaml:"apiKey,omitempty"`
+	ResponseCityKey string `yaml:"responseCityKey,omitempty"`
+	Fallback        bool   `yaml:"fallback,omitempty"`
 }
 
 func Load() *Config {
@@ -62,7 +65,15 @@ func Load() *Config {
 			log.Printf("unable to unmarshal config: %v", err)
 			return
 		}
+		envKeys := maps.Keys(he)
 
+		for _, api := range conf.Apis {
+			for k := range envKeys {
+				if strings.EqualFold(k, api.Name+"_apiKey") {
+					api.ApiKey = k
+				}
+			}
+		}
 	})
 	return conf
 }

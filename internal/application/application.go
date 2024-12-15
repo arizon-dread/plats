@@ -16,6 +16,7 @@ import (
 	"github.com/arizon-dread/plats/internal/config"
 	"github.com/arizon-dread/plats/internal/metrics"
 	"github.com/arizon-dread/plats/internal/model"
+	"github.com/tidwall/gjson"
 )
 
 func GetCity(zip string) []byte {
@@ -105,6 +106,13 @@ func getAddrFromApi(zip string, api config.ApiHost, ctx context.Context, c chan<
 	}
 	reqCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
+	path := api.Path
+	if strings.Contains(path, "${zip}") {
+		strings.Replace(path, "${zip}", zip, -1)
+	}
+	if strings.Contains(path, "${apikey}") {
+		strings.Replace(path, "${apikey}", api.ApiKey, 1)
+	}
 	errs := errors.New("")
 	req, err := http.NewRequestWithContext(reqCtx, "GET", fmt.Sprintf("%v%v", api.Url, api.Path), nil)
 	if err != nil {
@@ -115,8 +123,18 @@ func getAddrFromApi(zip string, api config.ApiHost, ctx context.Context, c chan<
 	if err == nil {
 		b, err := io.ReadAll(resp.Body)
 		if err == nil {
+
 			city := model.City{}
-			err = json.Unmarshal(b, &city)
+			if len(api.ResponseCityKey) > 0 {
+				c := gjson.Get(string(b), api.ResponseCityKey).String()
+				if len(c) > 0 {
+					city.City = c
+				} else {
+					err = fmt.Errorf("unable to parse json response with gjson and api.ResponseCityKey")
+				}
+			} else {
+				err = json.Unmarshal(b, &city)
+			}
 			if err == nil {
 				// if the context is done, another routine has finished the call and this is trailing after, then we just return. otherwise, write to the channel
 				select {
