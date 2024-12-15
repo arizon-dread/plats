@@ -2,3 +2,4 @@
 cmd/plats/__*
 plats
 !plats/
+.vscode
