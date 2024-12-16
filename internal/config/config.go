@@ -67,10 +67,10 @@ func Load() *Config {
 		}
 		envKeys := maps.Keys(he)
 
-		for _, api := range conf.Apis {
+		for i, api := range conf.Apis {
 			for k := range envKeys {
 				if strings.EqualFold(k, api.Name+"_apiKey") {
-					api.ApiKey = k
+					conf.Apis[i].ApiKey = he[k]
 				}
 			}
 		}
