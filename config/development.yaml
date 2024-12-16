@@ -13,5 +13,5 @@ apis:
   fallback: true
 - name: "external_api"
   url: https://external-api.com
-  path: /api/postal/
+  path: /api/postal/${zip}
   responseCityKey: city
