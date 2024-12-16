@@ -66,7 +66,7 @@ func Load() *Config {
 			return
 		}
 		envKeys := maps.Keys(he)
-
+		//find and overwrite apikeys from env to the config.
 		for i, api := range conf.Apis {
 			for k := range envKeys {
 				if strings.EqualFold(k, api.Name+"_apiKey") {
