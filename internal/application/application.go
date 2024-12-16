@@ -108,13 +108,13 @@ func getAddrFromApi(zip string, api config.ApiHost, ctx context.Context, c chan<
 	defer cancel()
 	path := api.Path
 	if strings.Contains(path, "${zip}") {
-		strings.Replace(path, "${zip}", zip, -1)
+		path = strings.Replace(path, "${zip}", zip, -1)
 	}
 	if strings.Contains(path, "${apikey}") {
-		strings.Replace(path, "${apikey}", api.ApiKey, 1)
+		path = strings.Replace(path, "${apikey}", api.ApiKey, 1)
 	}
 	errs := errors.New("")
-	req, err := http.NewRequestWithContext(reqCtx, "GET", fmt.Sprintf("%v%v", api.Url, api.Path), nil)
+	req, err := http.NewRequestWithContext(reqCtx, "GET", fmt.Sprintf("%v%v", api.Url, path), nil)
 	if err != nil {
 		errs = errors.Join(errs, fmt.Errorf("got error when creating http request, %w", err))
 	}
