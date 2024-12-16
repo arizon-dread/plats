@@ -1,0 +1,17 @@
+cache:
+  url: localhost
+  #user:
+  #pass:
+  protocol: tcp
+  port: 6379
+apis: 
+- name: "papilite"
+  url: "https://api.papapi.se"
+  path: "/lite/?query=${zip}&format=json&apikey=${apikey}"
+  apiKey: #Will be replaced by ${api.name}_apikey from the env
+  responseCityKey: results.0.city
+  fallback: true
+- name: "external_api"
+  url: https://external-api.com
+  path: /api/postal/
+  responseCityKey: city
