@@ -31,7 +31,7 @@ func GetCity(zip string) []byte {
 	}
 
 	conf := config.Load()
-	//get all apiHosts into a cloned list so we can filter out the fallbacks w/o removing them from the confing singleton
+	//get all apiHosts into a cloned list so we can filter out the fallbacks w/o removing them from the config singleton
 	apis := slices.Clone(conf.Apis)
 	fallbacks := []config.ApiHost{}
 	//remove fallbacks from the simultaneous calls
