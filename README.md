@@ -2,15 +2,6 @@
 Plats is a swedish word that translates to location.
 ## Zipcodes and cities
 The main/initial purpose of this API is to create a unified endpoint for a fan-out of an upstream collection of API's to ask for a city by using a zip-code, and to cache the response in a redis/valkey-like cache, to offload the upstream API's.  
-## Performance and cost 
-The focus of the API is performance, the quickest response from upstream will be returned to the caller, and also cached. The cache will be checked before calling upstream API's.  
-The API's can be graded into two categories, fallbacks or main API's. This way, you can gradually decrease the cost of hits on the upstream API's as you build the local cache, and also prioritise speed or low cost upstream API's in your main API's collection and only ask the costly or slow API's if you don't get a hit in your main ones.
-
-## Statistics/metrics
-The API will provide metrics on the prometheus format on the `/metrics` endpoint. It will dynamically create a counter for each API you add to the config list, and also a counter for the cache. You can then monitor, or create graphs that detail how the fan-out is working, which API's are fast, to what grade the cache is used etc. Please note that only the fastest upstream hit will generate an uptick, even if the other endpoints in your config are hit but return slower. That means you can't rely on the `/metrics` endpoint to warn you when you're getting near a rate limit for your upstream API's, some of the hits will be swallowed if there are other, faster API's in your list.  
-
-The purpose of this project is not to keep track of rate limits of upstream API's, but to keep track of which ones are fast and how many cache hits you have over time.  
-
 ## Endpoints
 `GET /healthz` - API-endpoint for Kubernetes to see if the application is healthy. At the time of writing, this will return `200 healthy` as long as the app is running.  
 `GET /metrics` - API-endpoint for Prometheus metrics scraping. Adds custom endpoints for all upstream API's and also one for the cache.  
@@ -41,6 +32,17 @@ apis:
 `path=/go/bin/config` - will make the app look for a config file in the given path.  
 `environment=development` - will make the app look for `development.yaml` as the config file, it will suffix the `environment` env var value with `.yaml`.  
 `my_api_apikey=s3cr3t-4p1k3y` - will use the pattern `${apis[#].name}_apikey` in the env to replace each setting in the `apis` array of entries in the config object, which in turn will be used to replace the `${apikey}` value inside the url of the API.   
+
 ### Response json and responseCityKey
 The [gjson](https://github.com/tidwall/gjson) project is used to map which json key in the response in the upstream API to use to get the value for the response to the downstream client.  
 See the gjson documentation for details on how to drill down in a json document.
+
+## Performance and cost 
+The focus of the API is performance, the quickest response from upstream will be returned to the caller, and also cached. The cache will be checked before calling upstream API's.  
+The API's can be graded into two categories, fallbacks or main API's. This way, you can gradually decrease the cost of hits on the upstream API's as you build the local cache, and also prioritise speed or low cost upstream API's in your main API's collection and only ask the costly or slow API's if you don't get a hit in your main ones.
+
+## Statistics/metrics
+The API will provide metrics on the prometheus format on the `/metrics` endpoint. It will dynamically create a counter for each API you add to the config list, and also a counter for the cache. You can then monitor, or create graphs that detail how the fan-out is working, which API's are fast, to what grade the cache is used etc. Please note that only the fastest upstream hit will generate an uptick, even if the other endpoints in your config are hit but return slower. That means you can't rely on the `/metrics` endpoint to warn you when you're getting near a rate limit for your upstream API's, some of the hits will be swallowed if there are other, faster API's in your list.  
+
+The purpose of this project is not to keep track of rate limits of upstream API's, but to keep track of which ones are fast and how many cache hits you have over time.  
+
