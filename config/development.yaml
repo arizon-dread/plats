@@ -5,9 +5,9 @@ cache:
   protocol: tcp
   port: 6379
 apis: 
-- name: "papilite"
-  url: "https://api.papapi.se"
-  path: "/lite/?query=${zip}&format=json&apikey=${apikey}"
+- name: "my_api"
+  url: "https://api.com"
+  path: "?query=${zip}&apikey=${apikey}"
   apiKey: #Will be replaced by ${api.name}_apikey from the env
   responseCityKey: results.0.city
   fallback: true
