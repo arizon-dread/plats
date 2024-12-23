@@ -27,12 +27,13 @@ type Cache struct {
 	Proto string `yaml:"protocol,omitempty"`
 }
 type ApiHost struct {
-	Name            string `yaml:"name"`
-	Url             string `yaml:"url"`
-	Path            string `yaml:"path,omitempty"`
-	ApiKey          string `yaml:"apiKey,omitempty"`
-	ResponseCityKey string `yaml:"responseCityKey,omitempty"`
-	Fallback        bool   `yaml:"fallback,omitempty"`
+	Name            string   `yaml:"name"`
+	Url             string   `yaml:"url"`
+	Path            string   `yaml:"path,omitempty"`
+	ApiKey          string   `yaml:"apiKey,omitempty"`
+	ResponseCityKey string   `yaml:"responseCityKey,omitempty"`
+	LogHeaders      []string `yaml:"logHeaders,omitempty"`
+	Fallback        bool     `yaml:"fallback,omitempty"`
 }
 
 func Load() *Config {

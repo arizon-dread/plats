@@ -10,6 +10,9 @@ apis:
   path: "?query=${zip}&apikey=${apikey}"
   apiKey: #Will be replaced by ${api.name}_apikey from the env
   responseCityKey: results.0.city
+  logHeaders: [
+    MyRateQuotaResponseHeader
+  ]
   fallback: true
 - name: "external_api"
   url: https://external-api.com
