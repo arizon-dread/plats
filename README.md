@@ -4,7 +4,7 @@ Plats is a swedish word that translates to location.
 The main/initial purpose of this API is to create a unified endpoint for a fan-out of an upstream collection of API's to ask for a city by using a zip-code, and to cache the response in a redis/valkey-like cache, to offload the upstream API's.  
 ## Endpoints
 `GET /healthz` - API-endpoint for Kubernetes to see if the application is healthy. At the time of writing, this will return `200 healthy` as long as the app is running.  
-`GET /metrics` - API-endpoint for Prometheus metrics scraping. Adds custom endpoints for all upstream API's and also one for the cache.  
+`GET /metrics` - API-endpoint for Prometheus metrics scraping. Adds custom counters for all upstream API's and also one for the cache.  
 `GET /v1/zip/${zip}` - API-endpoint that returns a plain text city name for the given zip code.  
 
 ## Config
