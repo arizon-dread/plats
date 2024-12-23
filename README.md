@@ -42,7 +42,7 @@ The [gjson](https://github.com/tidwall/gjson) project is used to map which json 
 See the gjson documentation for details on how to drill down in a json document.
 
 ### LogHeaders
-This []string will search for response headers in the upstream API responses and log them, if they're found. If you have an upstream API that responds with a quota on how many calls you have left, as a header on each response, you can specify the header and then monitor the log for a pattern using your favourite log muncher.  
+This `[]string` will search for response headers in the upstream API responses and log them, if they're found. If you have an upstream API that responds with a quota on how many calls you have left, as a header on each response, you can specify the header and then monitor the log for a pattern using your favourite log muncher.  
 
 ## Performance and cost 
 The focus of the API is performance, the quickest response from upstream will be returned to the caller, and also cached. The cache will be checked before calling upstream API's.  
