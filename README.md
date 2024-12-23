@@ -22,6 +22,10 @@ apis:
   path: "?query=${zip}&apikey=${apikey}"
   apiKey: #will be replaced by ${apis[#].name}_apikey from the env
   responseCityKey: results.0.city #this returns a more complex json structure.
+  logHeaders: [
+    MyQuotaResponseHeader,
+    MyOtherRespHeader
+  ]
   fallback: true
 - name: "external_api" #use snake_case for prometheus' sake.
   url: https://external-api.com
@@ -42,7 +46,4 @@ The focus of the API is performance, the quickest response from upstream will be
 The API's can be graded into two categories, fallbacks or main API's. This way, you can gradually decrease the cost of hits on the upstream API's as you build the local cache, and also prioritise speed or low cost upstream API's in your main API's collection and only ask the costly or slow API's if you don't get a hit in your main ones.
 
 ## Statistics/metrics
-The API will provide metrics on the prometheus format on the `/metrics` endpoint. It will dynamically create a counter for each API you add to the config list, and also a counter for the cache. You can then monitor, or create graphs that detail how the fan-out is working, which API's are fast, to what grade the cache is used etc. Please note that only the fastest upstream hit will generate an uptick, even if the other endpoints in your config are hit but return slower. That means you can't rely on the `/metrics` endpoint to warn you when you're getting near a rate limit for your upstream API's, some of the hits will be swallowed if there are other, faster API's in your list.  
-
-The purpose of this project is not to keep track of rate limits of upstream API's, but to keep track of which ones are fast and how many cache hits you have over time.  
-
+The API will provide metrics on the prometheus format on the `/metrics` endpoint. It will dynamically create a counter for each API you add to the config list, and also a counter for the cache. You can then monitor, or create graphs that detail how the fan-out is working, which API's are fast, to what grade the cache is used etc. Please note that only the fastest upstream hit will generate an uptick, even if the other endpoints in your config are hit but return slower. That means you can't rely on the `/metrics` endpoint to warn you when you're getting near a rate limit for your upstream API's, some of the hits will be swallowed if there are other, faster API's in your list. You can, however, specify response headers for each API, that will be logged regardless if the hit is winning the speed contest towards the other upstream API's or not.    
