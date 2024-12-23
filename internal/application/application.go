@@ -119,6 +119,12 @@ func getAddrFromApi(zip string, api *config.ApiHost, ctx context.Context, c chan
 	if err == nil {
 		b, err := io.ReadAll(resp.Body)
 		if err == nil {
+			//Log response headers if specified, to track rate quota.
+			for _, v := range api.LogHeaders {
+				if resp.Header.Get(v) != "" {
+					log.Printf("%v.%v: %v\n", api.Name, v, resp.Header.Get(v))
+				}
+			}
 
 			city := model.City{}
 			//if we have a gjson-readable path to where the "city" is in the response, use that to parse the response and set the city value.
