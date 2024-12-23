@@ -23,7 +23,7 @@ apis:
   apiKey: #will be replaced by ${apis[#].name}_apikey from the env
   responseCityKey: results.0.city #this returns a more complex json structure.
   logHeaders: [
-    MyQuotaResponseHeader,
+    MyQuotaResponseHeader, #will be logged as "<datestring> my_api.MyQuotaResponseHeader: <value>"
     MyOtherRespHeader
   ]
   fallback: true
