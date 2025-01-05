@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/arizon-dread/plats/internal/config"
 	"github.com/gomodule/redigo/redis"
@@ -12,9 +13,19 @@ type Cache struct {
 
 var instance *Cache = nil
 
+var m *sync.Mutex
+
 func New() *Cache {
-	if instance == nil {
-		instance = new(Cache)
+	for {
+		if instance == nil {
+			if locked := m.TryLock(); locked {
+				instance = new(Cache)
+				m.Unlock()
+				break
+			}
+		} else {
+			break
+		}
 	}
 	return instance
 }
