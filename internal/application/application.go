@@ -70,7 +70,7 @@ func getSimultaneously(zip string, apis *[]config.ApiHost) []byte {
 		go func() {
 			defer wg.Done()
 			err := getAddrFromApi(zip, &api, ctx, result, &wg)
-			if err != nil {
+			if err != nil && len(err.Error()) > 0 {
 				log.Printf("Got error when calling api, %v\n", err)
 			}
 		}()
